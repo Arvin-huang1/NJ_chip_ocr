@@ -41,7 +41,7 @@ void main()
 	//cout << img_name << endl;
 	//getOcrLocation(img);*/
 	char *buffer;
-	//也可以将buffer作为输出参数
+	//也可以将buffer作为输出参数，获取当前文件目录
 	if ((buffer = _getcwd(NULL, 0)) == NULL)
 	{
 		perror("getcwd error");
