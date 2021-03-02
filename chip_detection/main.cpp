@@ -42,12 +42,9 @@ void main()
 	//getOcrLocation(img);*/
 	char *buffer;
 	//也可以将buffer作为输出参数，获取当前文件目录
-	if ((buffer = _getcwd(NULL, 0)) == NULL)
+	if ((buffer = _getcwd(NULL, 0)) != NULL)
 	{
-		perror("getcwd error");
-	}
-	else
-	{
+
 		string str = buffer;
 		printf("%s\n", buffer);
 		cout << str << endl;
