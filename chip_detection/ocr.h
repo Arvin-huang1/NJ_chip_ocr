@@ -7,12 +7,12 @@
 #include <vector>
 #include <opencv.hpp>
 #include "Windows.h"
-
+#include "libxl.h"
 
 using namespace std;
 using namespace cv;
 using namespace dnn;
-
+using namespace libxl;
 
 struct ImgLocation {
 	int x;//Í¼Æ¬x×ø±ê
@@ -22,7 +22,7 @@ struct ImgLocation {
 		return this->x == other.x && this->y == other.y;
 	}
 	bool operator < (const ImgLocation& other) const {
-		return this->x == other.x ;
+		return this->x < other.x ;
 	}
 };
 
@@ -39,6 +39,8 @@ string getImgName(Mat &img, Net &net);
 int charToNum(char c);
 char numToChar(int num);
 int strToNum(string str);
+
+void writeExcel();
 
 //debughº¯Êý
 void imgsRenameDebug(const string &imgs_path, const string & file_path, const string & save_path, Net &net);

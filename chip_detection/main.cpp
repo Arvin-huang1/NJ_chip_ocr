@@ -27,11 +27,10 @@ void main()
 	
 	//charsSegmentDebug("3_new_cut_resize", "img_chars");
 
-	/*
 	string path = "D:\\work\\Projects\\nanjing_chip\\chip_detection\\nanjing_ocr.pb";
 	Net net = readNetFromTensorflow(path);
-	string imgs_path = "D:\\work\\Projects\\nanjing_chip\\chip_detection\\rename";
-	string img_path = "D:\\work\\Projects\\nanjing_chip\\chip_detection\\rename\\01_06.png";
+	string imgs_path = "D:\\work\\Resource\\nanjing_chip\\rename";
+	string img_path = "D:\\work\\Resource\\nanjing_chip\\rename\\01_06.png";
 	Mat img = imread(img_path);
 	net.setPreferableTarget(DNN_TARGET_CUDA);
 	net.setPreferableBackend(DNN_BACKEND_CUDA);
@@ -39,8 +38,8 @@ void main()
 	imgsRenameDebug(imgs_path, "rename.txt", img_path, net);
 	//string img_name = getImgName(img, net);
 	//cout << img_name << endl;
-	//getOcrLocation(img);*/
-	char *buffer;
+	//getOcrLocation(img);
+	/*char *buffer;
 	//也可以将buffer作为输出参数，获取当前文件目录
 	if ((buffer = _getcwd(NULL, 0)) != NULL)
 	{
@@ -50,6 +49,8 @@ void main()
 		cout << str << endl;
 		free(buffer);
 	}
-
+	
+	writeExcel();
+*/
 	system("pause");
 }
