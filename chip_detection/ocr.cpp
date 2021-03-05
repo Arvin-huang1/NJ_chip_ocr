@@ -36,12 +36,12 @@ vector<ImgLocation> getOcrLocation(Mat &img)
 		{
 			index++;
 			// 外接矩形
-			//Rect rect_flag(x, y, w, h);
+			Rect rect_flag(x, y, w, h);
 			//rectangle(img_copy, rect_flag, Scalar(0, 0, 255), 2, 8, 0);
 			//rectangle(img_copy, rect, Scalar(0, 0, 255), 1, 8, 0);
 			//cout << "rect_flag: " << rect_flag << ",center_x: " << center_x << ",center_y: " << center_y << endl;
-			//cout << "index: " << index << ",area: " << area << endl;
-			//cout << rect_flag << endl;
+			cout << "index: " << index << ",area: " << area << endl;
+			cout << rect_flag << endl;
 			ocr_location.x = x + 15;
 			ocr_location.y = y + 2;
 			ocrs_location.push_back(ocr_location);
@@ -49,7 +49,14 @@ vector<ImgLocation> getOcrLocation(Mat &img)
 
 	}
 	sort(ocrs_location.begin(), ocrs_location.end());
-
+	ocr_location.x = 0;
+	ocr_location.y = 0;
+	ocrs_location.push_back(ocr_location);//如果1个都没找到，则添加两个，防止程序出错
+	ocrs_location.push_back(ocr_location);
+	for (int i = 0; i < ocrs_location.size(); i++)
+	{
+		cout << ocrs_location[i].x << ' ' << ocrs_location[i].y << endl;
+	}
 	return ocrs_location;
 }
 
@@ -173,7 +180,7 @@ string getImgName(Mat &img, Net &net)
 
 		//获取预测最大的概率predict_max
 		vector<float>::iterator predict_max = max_element(begin(vec_out_softmax), end(vec_out_softmax));
-		if (*predict_max < 0.8)
+		if (*predict_max < 0.9)
 		{
 			predict_accuracy = 'F';
 		}
@@ -261,7 +268,7 @@ char numToChar(int num)
 }
 
 //debug调试发布函数
-//图片重命名，并存储F的名称，
+//图片重命名，并存储T的名称，
 void imgsRenameDebug(const string &imgs_path, const string & file_path, const string &save_path, Net &net)
 {
 	/*
@@ -280,8 +287,12 @@ void imgsRenameDebug(const string &imgs_path, const string & file_path, const st
 		cout << m << endl;
 		Mat img = imread(imgs_path + '/' + imgs_path_name[m]);
 		string img_name = getImgName(img, net);
+		if (img_name[5] == 'T')
+		{
+			outfile <<img_name.substr(0, 5) << endl;
+		} 
+
 		
-		outfile <<img_name.substr(0, 5) << endl;
 
 		//存储rename后的原始图片
 		map<string, int>::iterator ret_iter = glob_name_map.find(img_name.substr(0, 5));

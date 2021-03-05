@@ -25,7 +25,7 @@ void img_segment(string raw_picture_path, string save_path)
 		Mat img = imread(raw_picture_path + "/" + img_names[m]);
 		cout << img_names[m] << endl;
 		assert(!img.empty());//读取图片是否成功
-
+		
 		Mat img_gray, img_gray_bin;//原图的灰度图和二值图
 								   //将图像转成二值图像，用于统计连通域
 
@@ -688,12 +688,13 @@ void get_pix_min_max(string file_path, string save_path)
 //测试图片
 void test_in_min_max(string min_max_path, string file_path, string save_path)
 {
+	/*
 	//文件夹不存在，创建文件夹
 	if (_access(save_path.c_str(), 0) == -1)
 	{
 		_mkdir(save_path.c_str());
 	}
-
+	*/
 	Mat pix_min, pix_max;
 	pix_min = imread(min_max_path + "/pix_min.bmp", IMREAD_GRAYSCALE);
 	pix_max = imread(min_max_path + "/pix_max.bmp", IMREAD_GRAYSCALE);
@@ -800,16 +801,85 @@ void test_in_min_max(string min_max_path, string file_path, string save_path)
 		img_name2 = SplitStrToVec(img_names[m], ".");
 		if (index > 0)
 		{
-			imwrite("NEWNG/" + img_names[m], img_raw);//原图
-			//imwrite("NEWNG/" + img_name2[0] + "_." + img_name2[1], img_test_copy); //黑白图
+			imwrite("D:\\work\\Resource\\nanjing_chip\\NEWNG/" + img_names[m], img_raw);//原图
+			imwrite("D:\\work\\Resource\\nanjing_chip\\NEWNG/" + img_name2[0] + "_." + img_name2[1], img_test_copy); //黑白图
 		} 
 		else
 		{
-			imwrite("NEWOK/"  + img_names[m], img_raw);//原图
-			//imwrite("NEWOK/" + img_name2[0] + "_." + img_name2[1], img_test_copy); //黑白图
+			imwrite("D:\\work\\Resource\\nanjing_chip\\NEWOK/"  + img_names[m], img_raw);//原图
+			imwrite("D:\\work\\Resource\\nanjing_chip\\NEWOK/" + img_name2[0] + "_." + img_name2[1], img_test_copy); //黑白图
 		}
 		
 	}
 }
 
 
+//添加mask区域
+Mat add_mask(Mat &img)
+{
+
+	int rect_size[] = { 175,295,50,55,
+						275,295,50,55,
+						495,295,50,55,
+						595,295,50,55,
+						810,295,50,55,
+						910,295,50,55,
+						1125,295,50,55,
+						1225,295,50,55,
+						150,22,85,50,
+						470,22,85,50
+	};
+	vector<Rect> mask_rect;
+	Mat mask;
+	for (int i = 0; i < size(rect_size)/4 ; i++)
+	{
+		Rect rc(rect_size[4 * i], rect_size[4 * i + 1], rect_size[4 * i + 2], rect_size[4 * i + 3]);
+		mask_rect.push_back(rc);
+	}
+
+	Mat img1, img2, img3, img4;
+	mask = Mat::zeros(img.size(), CV_8UC1);
+	for (int i = 0; i < mask_rect.size(); i++)
+	{
+		mask(mask_rect[i]).setTo(255);//只与有效区域有关
+	}
+	
+
+	img.copyTo(img2, mask);//只获取有效区域的图片
+	img.copyTo(img3);
+	img3.setTo(0, mask);
+	imshow("img2", img2);
+	imshow("img3", img3);
+	imshow("mask", mask);
+
+	waitKey();
+	return img3;
+}
+
+void test(Mat &img)
+{
+	Mat img_gray,img_bin;
+	cvtColor(img, img_gray, COLOR_BGR2GRAY);
+	threshold(img_gray, img_bin, 200, 255, THRESH_BINARY); //二值化
+	Mat out, stats, centroids;
+	int number = connectedComponentsWithStats(img_bin, out, stats, centroids, 8, CV_16U);
+	int index = 0;
+	//获取子图连通域矩形
+	for (int i = 1; i < number; i++)
+	{
+		// 中心位置
+		double center_x = centroids.at<double>(i, 0);
+		double center_y = centroids.at<double>(i, 1);
+		//矩形边框
+		int x = stats.at<int>(i, CC_STAT_LEFT);
+		int y = stats.at<int>(i, CC_STAT_TOP);
+		int w = stats.at<int>(i, CC_STAT_WIDTH);
+		int h = stats.at<int>(i, CC_STAT_HEIGHT);
+		int area = stats.at<int>(i, CC_STAT_AREA);
+
+
+		// 外接矩形
+		Rect rect_print = Rect(x, y, w, h);
+		cout << index++ << ':' << rect_print << ',' << area << endl;
+	}
+}

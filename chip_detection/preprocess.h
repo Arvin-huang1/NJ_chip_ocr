@@ -24,5 +24,6 @@ void img_draw_rect_final(string txt_path, string picture_path, string save_persp
 	string save_result_path, string save_point_path);
 void get_pix_min_max(string file_path, string save_path);
 void test_in_min_max(string min_max_path, string file_path, string save_path);
-void imgsSegmentDebug(const string &imgs_path, const string & save_path);
+Mat add_mask(Mat &img);
+void test(Mat &img);
 #endif // PREPROCESS_H
