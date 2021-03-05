@@ -32,7 +32,7 @@ vector<ImgLocation> getOcrLocation(Mat &img)
 		int h = stats.at<int>(i, CC_STAT_HEIGHT);
 		int area = stats.at<int>(i, CC_STAT_AREA);
 
-		if (area > 3000 && x <img.cols /2 && y < img.rows /4 && w > 100 && w < 120 && h > 40 && h < 60)
+		if (area > 2000 && x <img.cols /2 && y < img.rows /4 && w > 100 && w < 120 && h > 40 && h < 60)
 		{
 			index++;
 			// 外接矩形
@@ -53,6 +53,7 @@ vector<ImgLocation> getOcrLocation(Mat &img)
 	ocr_location.y = 0;
 	ocrs_location.push_back(ocr_location);//如果1个都没找到，则添加两个，防止程序出错
 	ocrs_location.push_back(ocr_location);
+	
 	for (int i = 0; i < ocrs_location.size(); i++)
 	{
 		cout << ocrs_location[i].x << ' ' << ocrs_location[i].y << endl;
@@ -177,10 +178,16 @@ string getImgName(Mat &img, Net &net)
 		{
 			vec_out_softmax.push_back(exp(vec_out[i]) / softmax_sum);
 		}
-
+		if (i == 0)
+		{
+			for (int i = 0; i < vec_out_softmax.size(); i++)
+			{
+				cout << vec_out_softmax[i] << endl;
+			}
+		}
 		//获取预测最大的概率predict_max
 		vector<float>::iterator predict_max = max_element(begin(vec_out_softmax), end(vec_out_softmax));
-		if (*predict_max < 0.9)
+		if (*predict_max < 0.8)
 		{
 			predict_accuracy = 'F';
 		}
@@ -303,7 +310,7 @@ void imgsRenameDebug(const string &imgs_path, const string & file_path, const st
 			sprintf_s(new_name, "%d.bmp", name_cnt + 1);
 			cout << "new_name " << new_name << endl;
 			string tmp = imgs_path + "/" + imgs_path_name[m];
-			string rst =  imgs_path + "/" + "manual_" + img_name.substr(0, 5) + new_name;
+			string rst =  imgs_path + "/" + "repeat_" + img_name.substr(0, 5) + new_name;
 			rename(tmp.data(), rst.data());
 
 			//imwrite(save_path + '\\' + img_name.substr(0,5) + new_name, img);

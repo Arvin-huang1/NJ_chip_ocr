@@ -856,13 +856,14 @@ Mat add_mask(Mat &img)
 	return img3;
 }
 
+//连通域测试函数
 void test(Mat &img)
 {
 	Mat img_gray,img_bin;
-	cvtColor(img, img_gray, COLOR_BGR2GRAY);
-	threshold(img_gray, img_bin, 200, 255, THRESH_BINARY); //二值化
+	//cvtColor(img, img_gray, COLOR_BGR2GRAY);
+	//threshold(img_gray, img_bin, 200, 255, THRESH_BINARY); //二值化
 	Mat out, stats, centroids;
-	int number = connectedComponentsWithStats(img_bin, out, stats, centroids, 8, CV_16U);
+	int number = connectedComponentsWithStats(img, out, stats, centroids, 8, CV_16U);
 	int index = 0;
 	//获取子图连通域矩形
 	for (int i = 1; i < number; i++)
@@ -877,9 +878,50 @@ void test(Mat &img)
 		int h = stats.at<int>(i, CC_STAT_HEIGHT);
 		int area = stats.at<int>(i, CC_STAT_AREA);
 
+		if (area>55555 && w>1000 && h > 300 && w<1500)
+		{
+			// 外接矩形
+			Rect rect_print = Rect(x, y, w, h);
+			cout << index++ << ':' << rect_print << ',' << area << endl;
+		}
+			
 
-		// 外接矩形
-		Rect rect_print = Rect(x, y, w, h);
-		cout << index++ << ':' << rect_print << ',' << area << endl;
+
+	}
+}
+
+//获取模糊图片
+void get_blurred_imgs(const string &imgs_path)
+{
+	vector<string> img_names;
+	fileSearch(imgs_path.data(), img_names);//获取所有图片名称
+
+	//处理子图
+	for (int m = 0; m < img_names.size(); m++)
+	{
+		Mat img = imread(imgs_path + "/" + img_names[m]);
+		Mat img_roi, img_roi_gray,img_sobel, mean_img;
+		//img(Rect(165, 50, 150, 100)).copyTo(img_roi);
+		img.copyTo(img_roi);
+		//转灰度图
+		cvtColor(img_roi, img_roi_gray, COLOR_BGR2GRAY);
+		//Sobel算子计算梯度值
+		//meanStdDev(img_roi_gray, mean_img, img_sobel);
+		//Sobel(img_roi_gray, img_sobel, CV_16U, 1, 1);
+		Laplacian(img_roi_gray, img_sobel, CV_8U, 5);
+		Mat img_bin;
+		threshold(img_sobel, img_bin, 200, 255, THRESH_BINARY_INV);
+		//imshow("img", img_sobel);
+		//imshow("img_bin", img_bin);
+		//waitKey(0);
+		//传值
+		float meanValue = mean(img_sobel)[0];  
+		cout << img_names[m]<<","<< meanValue << endl;
+		imwrite("D:\\OCR\\bin\\blurred\\" + img_names[m], img_bin);
+		if (meanValue < 11 )
+		{
+			imwrite("D:\\OCR\\bin\\blurred\\" + img_names[m], img);
+		}
+
 	}
 }

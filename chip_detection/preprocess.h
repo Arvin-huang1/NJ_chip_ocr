@@ -26,4 +26,5 @@ void get_pix_min_max(string file_path, string save_path);
 void test_in_min_max(string min_max_path, string file_path, string save_path);
 Mat add_mask(Mat &img);
 void test(Mat &img);
+void get_blurred_imgs(const string &imgs_path); 
 #endif // PREPROCESS_H
