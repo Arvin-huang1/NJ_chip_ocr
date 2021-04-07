@@ -46,4 +46,6 @@ void writeExcel();
 void imgsRenameDebug(const string &imgs_path, const string & file_path, const string & save_path, Net &net);
 void charsSegmentDebug(const string &imgs_path, const string & save_path);
 void charsClassificationDebug(const string &chars_path, const string & save_path, Net &net);
+float getCharsAccuracy(const string &chars_path, Net &net);
+float getPointsAccuracy(const string &chars_path, Net &net);
 #endif // OCR_H

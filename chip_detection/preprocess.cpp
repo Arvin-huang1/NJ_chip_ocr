@@ -30,8 +30,16 @@ void img_segment(string raw_picture_path, string save_path)
 								   //将图像转成二值图像，用于统计连通域
 
 		cvtColor(img, img_gray, COLOR_BGR2GRAY);
-		Scalar mean_pix = mean(img_gray); //获取灰度图像素平均值
-		threshold(img_gray, img_gray_bin, 150, 255, THRESH_BINARY);
+		Mat img_gaus;
+		GaussianBlur(img, img_gaus, Size(3, 3), 0);
+		cvtColor(img_gaus, img_gray, COLOR_BGR2GRAY);
+
+		Mat img_sobel;
+		Laplacian(img_gray, img_sobel, CV_8U);
+		threshold(img_sobel, img_gray_bin, 5, 255, THRESH_BINARY_INV);
+
+		//Scalar mean_pix = mean(img_gray); //获取灰度图像素平均值
+		//threshold(img_gray, img_gray_bin, 132, 255, THRESH_BINARY);
 
 		Mat out, stats, centroids;//获取连通域统计信息
 
@@ -56,10 +64,11 @@ void img_segment(string raw_picture_path, string save_path)
 			//if (area > 100000 && x > 10 && y > 10 && (x + w)<4090 && (y + h) < 2950)//1
 			//if (area > 10000 && area < 20000 && x >10 && y >10 && (x + w)<4090 && (y + h) <2950 && w>420 && h > 360)//2,th82
 			//if (area > 20000 && area < 100000 && w>700 && x > 10 && y > 10 && (x + w)<4090 && (y + h) < 2950)//3,th74
-			if (area > 100000 && w>700 && x > 7 && y > 7 && (x + w)<4080 && (y + h) < 2984) //th147
+			//if (area > 100000 && w>700 && x > 7 && y > 7 && (x + w)<4080 && (y + h) < 2984) //th147
+			if (area > 100000 && area< 430000 && w>700 && x > 1 && y > 1 && (x + w)<4095 && (y + h) < 2999) //th130
 			{
 				// 外接矩形
-				rect.push_back(Rect(x-4, y - 4 , w+8 , h+8));
+				rect.push_back(Rect(x-50, y - 50 , w+100 , h+100));
 				//rectangle(img_copy, rect_flag, Scalar(0, 255, 255), 4, 8, 0);
 				cout << "rect_flag: " << rect[index] << endl;
 				cout << "index: " << index << ",area: " << area << endl;
@@ -69,13 +78,14 @@ void img_segment(string raw_picture_path, string save_path)
 		}
 
 		vector<Mat> img_part; //存储子图
-		vector<string> img_name = SplitStrToVec(img_names[m], ".");
+		
+		vector<string> img_name = SplitStrToVec(img_names[m], "p");
 		for (int i = 0; i < rect.size(); i++)
 		{
 			Mat img_part_resize;
 			img_part.push_back(img(rect[i]));
 			resize(img_part[i], img_part_resize, Size(1350, 389));
-			imwrite(save_path + "/" + img_name[0] + '_' +  to_string(i) + ".bmp", img_part_resize);
+			imwrite(save_path + "/" + img_name[0].substr(0, img_name[0].length() - 1) + '_' +  to_string(i) + ".bmp", img_part_resize);
 			img_part_num++;
 		}
 
@@ -358,7 +368,7 @@ void img_draw_rect_debug(string file_path, string save_path)
 	assert(!img.empty());
 	
 	
-	for (int j = 147; j < 255 ; j++,j++,j++)
+	for (int j = 254; j < 255 ; j++,j++,j++)
 	{
 		Mat img_copy;
 		Mat img_gray, img_gray_bin;//原图的灰度图和二值图
@@ -372,15 +382,16 @@ void img_draw_rect_debug(string file_path, string save_path)
 		img.copyTo(img_copy);
 
 		Mat out, stats, centroids;
+		Mat img_gaus;
+		GaussianBlur(img, img_gaus, Size(3, 3), 0);
+		cvtColor(img_gaus, img_gray, COLOR_BGR2GRAY);
+		
+		Mat img_sobel;
+		Laplacian(img_gray, img_sobel, CV_8U);
+		threshold(img_sobel, img_gray_bin, 5, 255, THRESH_BINARY_INV);
+		//mean_pix = mean(img_gray); //获取灰度图像素平均值
+		//threshold(img_gray, img_gray_bin, j, 255, THRESH_BINARY);
 
-		cvtColor(img, img_gray, COLOR_BGR2GRAY);
-		mean_pix = mean(img_gray); //获取灰度图像素平均值
-		threshold(img_gray, img_gray_bin, j, 255, THRESH_BINARY);
-		//namedWindow("img_copy", 0);
-		//resizeWindow("img_copy", 1500, 1000);
-		//imshow("img_copy", img_gray_bin);
-		//waitKey(0);
-		//destroyAllWindows();
 		number = connectedComponentsWithStats(img_gray_bin, out, stats, centroids, 8, CV_16U);
 		index = 0;
 		cout << j<<endl;
@@ -397,7 +408,8 @@ void img_draw_rect_debug(string file_path, string save_path)
 			int area = stats.at<int>(i, CC_STAT_AREA);
 			//if (area > 10000 && area < 20000 && x > 10 && y > 10 && (x+w)<4090 && (y+h) < 2950)//2
 			//if (area > 20000 && area < 100000 && w>700 && x > 10 && y > 10 && (x + w)<4090 && (y + h) < 2950)//3 th74
-			if (area > 100000  && w>700 && x > 1 && y > 1 && (x + w)<4095 && (y + h) < 2999) //th147
+			//if (area > 100000  && w>700 && x > 1 && y > 1 && (x + w)<4095 && (y + h) < 2999) //th147
+			if (area > 100000 && area< 430000 && w>700 && x > 1 && y > 1 && (x + w)<4095 && (y + h) < 2999) //th130
 			{
 				index++;
 				// 外接矩形
@@ -730,7 +742,6 @@ void test_in_min_max(string min_max_path, string file_path, string save_path)
 		}
 		cout << "img" << m << "  ,count_test:" << count_test << endl;
 
-		
 
 		Mat out, stats, centroids;//获取连通域统计信息
 		int number, index;
@@ -813,12 +824,167 @@ void test_in_min_max(string min_max_path, string file_path, string save_path)
 	}
 }
 
+//分析图片
+void analyze_imgs(const string &min_max_path, const string &file_path, const string save_path)
+{
+	
+	//文件夹不存在，创建文件夹
+	//if (_access(save_path.c_str(), 0) == -1)
+	//{
+	//_mkdir(save_path.c_str());
+	//}
+	
+	Mat pix_min, pix_max;
+	pix_min = imread(min_max_path + "/pix_min.bmp", IMREAD_GRAYSCALE);
+	pix_max = imread(min_max_path + "/pix_max.bmp", IMREAD_GRAYSCALE);
+	assert(!pix_min.empty() && !pix_max.empty());
+
+	vector<string> img_names;
+	fileSearch(file_path.data(), img_names);//获取所有图片名称
+
+	//分析单张图片
+	for (int m = 0; m < img_names.size(); m++)
+	{
+		vector<Rect> small_num,middle_num,large_num,center_num;
+		bool img_flag = true;
+		//处理的图片
+		Mat img_raw = imread(file_path + "/" + img_names[m], 1);
+		Mat img_test = imread(file_path + "/" + img_names[m], 0);
+		
+		Mat img_test_copy(img_test.rows, img_test.cols, CV_8UC1); //注意这里必须选CV_8UC1
+		img_test_copy.setTo(0); //颜色都设置为黑色  
+
+		int count_test = 0;
+		int out_point = 0;
+		for (int i = 0; i < img_test.cols; i++)
+		{
+			for (int j = 0; j < img_test.rows; j++)
+			{
+				if (img_test.at<uchar>(j, i) < int(pix_min.at<uchar>(j, i) - 30) || img_test.at<uchar>(j, i) > pix_max.at<uchar>(j, i) + 10)
+				{
+					img_test_copy.at<uchar>(j, i) = 255;
+					count_test++;
+					out_point++;
+				}
+			}
+		}
+		cout << "img" << m << "  ,count_test:" << count_test << endl;
+		vector<Mat> imgs = add_mask(img_test_copy);
+		
+		//处理其它区域的瑕疵
+		Mat out, stats, centroids;//获取连通域统计信息
+		int number, index;
+		Mat element = getStructuringElement(MORPH_RECT, Size(4, 4));
+		dilate(imgs[1], imgs[1], element);
+
+		//threshold(imgs[1], imgs[1], 82, 255, THRESH_BINARY); //二值化
+		number = connectedComponentsWithStats(imgs[1], out, stats, centroids, 8, CV_16U);
+		index = 0;
+		//获取子图连通域矩形
+		for (int i = 1; i < number; i++)
+		{
+			// 中心位置
+			double center_x = centroids.at<double>(i, 0);
+			double center_y = centroids.at<double>(i, 1);
+			//矩形边框
+			int x = stats.at<int>(i, CC_STAT_LEFT);
+			int y = stats.at<int>(i, CC_STAT_TOP);
+			int w = stats.at<int>(i, CC_STAT_WIDTH);
+			int h = stats.at<int>(i, CC_STAT_HEIGHT);
+			int area = stats.at<int>(i, CC_STAT_AREA);
+			if (area > 10)
+			{
+				//cout << area<<' '<<Rect(x, y, w, h) << endl;
+				if (w<6 && h < 6)
+				{
+					small_num.push_back(Rect(x, y, w, h));
+				}
+				if ((w < 18 && h < 18) && (w>=6 || h>=6) )
+				{
+					middle_num.push_back(Rect(x, y, w, h));
+				}
+				if (w >= 18 || h >= 18)
+				{
+					large_num.push_back(Rect(x, y, w, h));
+				}
+			}
+		}
+		
+		//处理发光孔区域
+		dilate(imgs[0], imgs[0], element);
+		//threshold(imgs[0], imgs[0], 82, 255, THRESH_BINARY); //二值化
+		number = connectedComponentsWithStats(imgs[0], out, stats, centroids, 8, CV_16U);
+		//获取子图连通域矩形
+		for (int i = 1; i < number; i++)
+		{
+			// 中心位置
+			double center_x = centroids.at<double>(i, 0);
+			double center_y = centroids.at<double>(i, 1);
+			//矩形边框
+			int x = stats.at<int>(i, CC_STAT_LEFT);
+			int y = stats.at<int>(i, CC_STAT_TOP);
+			int w = stats.at<int>(i, CC_STAT_WIDTH);
+			int h = stats.at<int>(i, CC_STAT_HEIGHT);
+			int area = stats.at<int>(i, CC_STAT_AREA);
+			if (area > 4)
+			{
+				center_num.push_back(Rect(x-2, y-2, w+4, h+4));
+			}
+
+		}
+
+		if (small_num.size() >= 20)
+		{
+			img_flag = false;
+			for (int i = 0; i < small_num.size() ; i++)
+			{
+				rectangle(img_raw, small_num[i], Scalar(0, 0, 255), 1, 8, 0);
+			}
+		}
+		if (middle_num.size() >= 10)
+		{
+			img_flag = false;
+			for (int i = 0; i < middle_num.size(); i++)
+			{
+				rectangle(img_raw, middle_num[i], Scalar(0, 0, 255), 1, 8, 0);
+			}
+		}
+		if (large_num.size() >= 1)
+		{
+			img_flag = false;
+			for (int i = 0; i < large_num.size(); i++)
+			{
+				rectangle(img_raw, large_num[i], Scalar(0, 0, 255), 1, 8, 0);
+			}
+		}
+		if (center_num.size() >= 1)
+		{
+			img_flag = false;
+			for (int i = 0; i < center_num.size(); i++)
+			{
+				rectangle(img_raw, center_num[i], Scalar(0, 0, 255), 1, 8, 0);
+			}
+		}
+		vector<string> img_name2;
+		img_name2 = SplitStrToVec(img_names[m], ".");
+		if (!img_flag)//NG
+		{
+			imwrite("D:\\work\\Resource\\nanjing_chip\\NG_\\" + img_names[m], img_raw);//原图
+			imwrite("D:\\work\\Resource\\nanjing_chip\\NG_\\" + img_name2[0] + "_." + img_name2[1], img_test_copy); //黑白图
+		}
+		else//OK
+		{
+			imwrite("D:\\work\\Resource\\nanjing_chip\\OK_\\" + img_names[m], img_raw);//原图
+			imwrite("D:\\work\\Resource\\nanjing_chip\\OK_\\" + img_name2[0] + "_." + img_name2[1], img_test_copy); //黑白图
+		}
+	}
+}
 
 //添加mask区域
-Mat add_mask(Mat &img)
+vector<Mat> add_mask(Mat &img)
 {
-
-	int rect_size[] = { 175,295,50,55,
+	vector<Mat> imgs;
+	int rect_size[] = { 175,295,50,55,//焊盘区
 						275,295,50,55,
 						495,295,50,55,
 						595,295,50,55,
@@ -826,34 +992,58 @@ Mat add_mask(Mat &img)
 						910,295,50,55,
 						1125,295,50,55,
 						1225,295,50,55,
-						150,22,85,50,
-						470,22,85,50
+						150,22,85,50,//ocr区
+						470,22,85,50,
+						790,22,85,50,
+						1110,22,85,50,
+						165,125,20,15,//金属角区
+						205,125,20,15,
+						485,125,20,15,
+						525,125,20,15,
+						805,125,20,15,
+						845,125,20,15,
+						1125,125,20,15,
+						1165,125,20,15,
+						180,145,30,30,//发光孔区
+						500,145,30,30,
+						820,145,30,30,
+						1140,145,30,30
 	};
+
 	vector<Rect> mask_rect;
-	Mat mask;
 	for (int i = 0; i < size(rect_size)/4 ; i++)
 	{
 		Rect rc(rect_size[4 * i], rect_size[4 * i + 1], rect_size[4 * i + 2], rect_size[4 * i + 3]);
-		mask_rect.push_back(rc);
+
+			mask_rect.push_back(rc);
 	}
 
-	Mat img1, img2, img3, img4;
-	mask = Mat::zeros(img.size(), CV_8UC1);
+	Mat invalid_mask,valid_mask;
+	Mat invalid_img, valid_img,img_temp;
+	invalid_mask = Mat::zeros(img.size(), CV_8UC1);
+	valid_mask = Mat::zeros(img.size(), CV_8UC1);
 	for (int i = 0; i < mask_rect.size(); i++)
 	{
-		mask(mask_rect[i]).setTo(255);//只与有效区域有关
+		
+		invalid_mask(mask_rect[i]).setTo(255);//只与有效区域有关
+		if (i>=12)
+		{
+			valid_mask(mask_rect[i]).setTo(255);//只与有效区域有关
+		}
+		
 	}
 	
 
-	img.copyTo(img2, mask);//只获取有效区域的图片
-	img.copyTo(img3);
-	img3.setTo(0, mask);
-	imshow("img2", img2);
-	imshow("img3", img3);
-	imshow("mask", mask);
-
+	img.copyTo(valid_img, valid_mask);//只获取有效区域的图片
+	img.copyTo(invalid_img);
+	invalid_img.setTo(0, invalid_mask);//获取无效区域外的图片
+	//imshow("img2", valid_img);
+	//imshow("img3", invalid_img);
+	//imshow("mask", mask);
 	waitKey();
-	return img3;
+	imgs.push_back(valid_img);
+	imgs.push_back(invalid_img);
+	return imgs;
 }
 
 //连通域测试函数
@@ -895,33 +1085,115 @@ void get_blurred_imgs(const string &imgs_path)
 {
 	vector<string> img_names;
 	fileSearch(imgs_path.data(), img_names);//获取所有图片名称
-
+	int a[10] = { 0 };
 	//处理子图
 	for (int m = 0; m < img_names.size(); m++)
 	{
 		Mat img = imread(imgs_path + "/" + img_names[m]);
 		Mat img_roi, img_roi_gray,img_sobel, mean_img;
-		//img(Rect(165, 50, 150, 100)).copyTo(img_roi);
+		//img(Rect(50, 50, 300, 300)).copyTo(img_roi);
 		img.copyTo(img_roi);
 		//转灰度图
 		cvtColor(img_roi, img_roi_gray, COLOR_BGR2GRAY);
 		//Sobel算子计算梯度值
 		//meanStdDev(img_roi_gray, mean_img, img_sobel);
 		//Sobel(img_roi_gray, img_sobel, CV_16U, 1, 1);
-		Laplacian(img_roi_gray, img_sobel, CV_8U, 5);
+
+		Laplacian(img_roi_gray, img_sobel, CV_8U);
 		Mat img_bin;
-		threshold(img_sobel, img_bin, 200, 255, THRESH_BINARY_INV);
-		//imshow("img", img_sobel);
-		//imshow("img_bin", img_bin);
-		//waitKey(0);
+		threshold(img_sobel, img_bin, 5, 255, THRESH_BINARY_INV);
+		imshow("img_roi_gray", img_roi_gray);
+		imshow("img", img_sobel);
+		imshow("img_bin", img_bin);
+		waitKey(0);
 		//传值
 		float meanValue = mean(img_sobel)[0];  
 		cout << img_names[m]<<","<< meanValue << endl;
-		imwrite("D:\\OCR\\bin\\blurred\\" + img_names[m], img_bin);
-		if (meanValue < 11 )
+		//imwrite("D:\\OCR\\bin\\blurred\\" + img_names[m], img_bin);
+		/*
+		if (meanValue < 2.2 )
 		{
-			imwrite("D:\\OCR\\bin\\blurred\\" + img_names[m], img);
+			//imwrite("D:\\OCR\\bin\\blurred\\" + img_names[m], img);
+			string tmp = imgs_path + "/" + img_names[m];
+			string rst = imgs_path + "/" + "blurred_" + img_names[m];
+			rename(tmp.data(), rst.data());
 		}
+		for (int i = 0; i < size(a); i++)
+		{
+			if (meanValue<1.8 + 0.2*i)
+			{
+				a[i]++;
+			}
+		}
+		*/
+	}
 
+	for (int i = 0; i < size(a); i++)
+	{
+		cout << a[i] << endl;
+	}
+}
+
+//检测图片划痕，效果不好
+void find_scratch(const string &file_path)
+{
+	vector<string> img_names;
+	fileSearch(file_path.data(), img_names);//获取所有图片名称
+	//分割子图
+	for (int m = 0; m < img_names.size(); m++)
+	{
+		//处理的图片
+		Mat img_raw = imread(file_path + "/" + img_names[m]);
+		Mat img_gray;
+		cvtColor(img_raw, img_gray, COLOR_BGR2GRAY);
+		Mat img_val;
+		img_raw(Rect(161, 31, 632, 764)).copyTo(img_val);
+		Scalar mean_pix = mean(img_val);
+		Mat img_test_copy(img_val.rows, img_val.cols, CV_8UC1); //注意这里必须选CV_8UC1
+		img_test_copy.setTo(0); //颜色都设置为黑色  
+		int count_test = 0;
+		for (int i = 0; i < img_val.cols; i++)
+		{
+			for (int j = 0; j < img_val.rows; j++)
+			{
+				if (img_val.at<uchar>(j, i) > mean_pix[0])
+				{
+					img_test_copy.at<uchar>(j, i) = 255;
+				}
+			}
+		}
+		imshow("img", img_test_copy);
+		waitKey();
+	}
+}
+
+//抠图，把roi区域扣到图片上
+void generateImg(Mat &img_ok, Mat &img_ng)
+{
+	Mat img_defect;
+	img_ng(Rect(20, 16, 3, 3)).copyTo(img_defect);
+	for (int i = 0; i < img_ok.cols-5 ; i++)
+	{
+		for (int j = 0; j < img_ok.cols - 5; j++)
+		{
+			Mat img_copy;
+			img_ok.copyTo(img_copy);
+			Rect roi_rect = Rect(i, j, img_defect.cols, img_defect.rows);
+			img_defect.copyTo(img_copy(roi_rect));
+			imwrite("D:\\work\\Resource\\nanjing_chip\\point_generate\\" + to_string(i) + to_string(j) + ".png", img_copy);
+		}
+	}
+}
+
+void getRawImgs(const string &imgs_path,const string &save_path)
+{
+	vector<string> img_names;
+	fileSearch(imgs_path.data(), img_names);//获取所有图片名称
+	//处理子图
+	for (int m = 0; m < img_names.size(); m++)
+	{
+		cout << m << endl;
+		Mat img = imread(R"(D:\work\Picture\hwchip20210111\align\)" + img_names[m]);
+		imwrite(save_path + "/" + img_names[m], img);
 	}
 }
